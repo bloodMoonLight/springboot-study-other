@@ -17,7 +17,7 @@ import redis.clients.jedis.JedisPoolConfig;
  * @Date 2019年11月11日20:11:25 20:11
  * Version 1.0
  **/
-@Configuration
+//@Configuration
 public class RedisConfig {
 
     private RedisConnectionFactory redisConnectionFactory = null;

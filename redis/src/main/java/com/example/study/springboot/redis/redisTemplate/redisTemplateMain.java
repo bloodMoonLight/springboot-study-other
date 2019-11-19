@@ -27,13 +27,13 @@ public class redisTemplateMain {
             return  null;
         });
 
-        redisTemplate.execute(new SessionCallback() {
+       /* redisTemplate.execute(new SessionCallback() {
             @Override
             public Object execute(RedisOperations redisOperations) throws DataAccessException {
 
                 return null;
             }
-        });
+        });*/
     }
 
 }
