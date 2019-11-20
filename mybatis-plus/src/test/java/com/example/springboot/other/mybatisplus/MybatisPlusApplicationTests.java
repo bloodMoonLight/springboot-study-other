@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.other.mybatisplus.Entity.User;
 import com.example.springboot.other.mybatisplus.mapper.UserMapper;
 import net.minidev.json.writer.UpdaterMapper;
+import org.assertj.core.util.Maps;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -143,6 +144,51 @@ class MybatisPlusApplicationTests {
 
 
     }
+
+
+    private void selectUserPrint(){
+        List<User> users = userMapper.selectList(null);
+        users.forEach(System.out::println);
+    }
+
+
+    @Test
+    void WapperSelectTest(){
+        System.out.println("-------- Wrapper Select method ------------");
+        //先查询
+        selectUserPrint();
+
+        //将一个用户的年龄改成20
+        userMapper.updateById(new User(4L,"zhanghongzhi",20,"qq@.com"));
+
+        selectUserPrint();
+
+        Map<String,Object> map = new HashMap<String,Object>(16);
+        map.put("age",20);
+        // 查询年龄为20岁的用户
+        List<User> users = userMapper.selectList(new QueryWrapper<User>().allEq(map));
+        users.forEach(System.out::println);
+
+
+        // 修改5条数据中两天数据的值为null
+        userMapper.updateById(new User(1L,"Jone",null,null));
+        userMapper.updateById(new User(3L,"Jone",22,null));
+        selectUserPrint();
+
+        Map<String,Object> map1 = new HashMap<String,Object>(16);
+        map.put("age",22);
+        map.put("email",null);
+        List<User> users1 = userMapper.selectList(new QueryWrapper<User>().allEq(map1, true));
+
+        System.out.println("------------- 测 试 allEq -------------------");
+        users1.forEach(System.out::println);
+
+
+
+
+    }
+
+
 
 
 
