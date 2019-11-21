@@ -183,7 +183,7 @@ class MybatisPlusApplicationTests {
         System.out.println("------------- 测 试 allEq -------------------");
         users1.forEach(System.out::println);
 
-
+        List<User> users2 = userMapper.selectList(new QueryWrapper<User>().groupBy());
 
 
     }
