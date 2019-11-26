@@ -1,6 +1,7 @@
 package com.example.study.springboot.redis.redisController;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Controller;
@@ -199,6 +200,78 @@ public class RedisController {
         map.put("success",true);
         return map;
     }
+
+
+    /**
+     * 测试redis的事物
+     * @Description TODO
+     * @params
+     * @Author 张鸿志
+     * @Date 2019/11/26 21:07
+     * @Return
+     **/
+    @ResponseBody
+    @RequestMapping("/multi")
+    public Map<String,Object> testMulti(){
+        redisTemplate.opsForValue().set("key1","value1");
+
+        redisTemplate.execute(new SessionCallback() {
+            @Override
+            public Object execute(RedisOperations redisOperations) throws DataAccessException {
+                //设置要监控的键
+                redisOperations.watch("key1");
+                //开启事务，在EXEC执行前，全部进入队列
+                redisOperations.multi();
+                redisOperations.opsForValue().set("key2","value2");
+                //redisOperations.opsForValue().increment("key1",1);
+                Object key2 = redisOperations.opsForValue().get("key2");
+                System.out.println("命令在队列，所以key2的value为【" + key2 +"】");
+                redisOperations.opsForValue().set("key3","value3");
+                Object key3 = redisOperations.opsForValue().get("key3");
+                System.out.println("命令在队列，所以key3的value为【" + key3 +"】");
+                //执行exec命令，将先判别key1是否在监控后被修改，如果是就不执行事物，不是 就执行事物
+                return redisOperations.exec();
+            }
+        });
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+
+    /**
+     * 测试Redis的流水线功能
+     * @Description TODO
+     * @params
+     * @Author 张鸿志
+     * @Date 2019/11/26 21:31
+     * @Return
+     **/
+    @ResponseBody
+    @RequestMapping("/Pipeline")
+    public Map<String,Object> testPipeline(){
+        Long start = System.currentTimeMillis();
+       List list =  (List) redisTemplate.executePipelined(new SessionCallback<Object>() {
+           @Override
+           public  Object execute(RedisOperations redisOperations) throws DataAccessException {
+               for(int i = 0; i < 100000; i++){
+                   redisOperations.opsForValue().set("Pipeline_" + i,"value_"+i);
+                   String o = (String)redisOperations.opsForValue().get("Pipeline_" + i);
+                   if (i == 100000) {
+                       System.out.println("命令只是进入队列，所以值为空【" + o + "】");
+
+                   }
+               }
+               return null;
+           }
+       });
+        Long end = System.currentTimeMillis();
+        System.out.println("耗时"+  (end - start) + "秒");
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+
 
 
 
