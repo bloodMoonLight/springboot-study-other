@@ -273,6 +273,77 @@ public class RedisController {
     }
 
 
+    /**
+     * 测试redis的消息订阅发布功能
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/listner")
+    public Map<String,Object> MessageListner(){
+        redisTemplate.convertAndSend("topic1","这是我发布的内容啊，望您监听");
+
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+    /**
+     * 测试redis的消息订阅发布功能
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/listner1")
+    public Map<String,Object> MessageListner1(){
+        redisTemplate.convertAndSend("topic2","这是我发布的内容啊，望您监听");
+
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+    /**
+     * 测试redis的消息订阅发布功能
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/listner2")
+    public Map<String,Object> MessageListner2(){
+        redisTemplate.convertAndSend("topic3","这是我发布的内容啊，望您监听");
+
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+    /**
+     * 测试redis的消息订阅发布功能
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/listner3")
+    public Map<String,Object> MessageListner3(){
+        redisTemplate.convertAndSend("topic4","这是我发布的内容啊，望您监听");
+
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+    /**
+     * 测试redis的消息订阅发布功能
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/listner4")
+    public Map<String,Object> MessageListner4(){
+        redisTemplate.convertAndSend("topic5","这是我发布的内容啊，望您监听");
+
+
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",true);
+        return map;
+    }
+
 
 
 
