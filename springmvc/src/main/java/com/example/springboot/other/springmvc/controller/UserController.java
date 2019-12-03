@@ -1,9 +1,18 @@
 package com.example.springboot.other.springmvc.controller;
 
+import com.example.springboot.other.springmvc.interfaces.PdfExportService;
 import com.example.springboot.other.springmvc.pojo.User;
 import com.example.springboot.other.springmvc.repository.UserMapper;
 import com.example.springboot.other.springmvc.validatapojo.ValidatorPojo;
 import com.example.springboot.other.springmvc.validator.UserValidator;
+import com.example.springboot.other.springmvc.view.PdfView;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Font;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfCell;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,10 +25,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import javax.validation.Valid;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -279,5 +296,145 @@ public class UserController {
         mv.setViewName("data/user");
         return mv;
     }
+
+
+    @GetMapping("/export/pdf")
+    public ModelAndView exportPdf(String userName,String note){
+
+        List<User> users = userMapper.selectList(null);
+        // 定义PDF视图
+        View view = new PdfView(exportService());
+        ModelAndView mv = new ModelAndView();
+        mv.setView(view);
+        mv.addObject("userList",users);
+        return mv;
+    }
+
+    @SuppressWarnings("unchecked")
+    private PdfExportService exportService(){
+        return (model,document,writer,request,response) ->{
+            try {
+                //设置A4纸张
+                document.setPageSize(PageSize.A4);
+                // 设置标题
+                document.addTitle("用户信息");
+                //添加换行
+                document.add(new Chunk("\n"));
+                //表格三列
+                PdfPTable table = new PdfPTable(3);
+                //单元格
+                PdfPCell cell = null;
+                //定义字体,为蓝色加粗
+                Font f8 = new Font();
+                f8.setColor(Color.BLUE);
+                f8.setStyle(Font.BOLD);
+                //设置单元格，第一格为id，并设置字体
+                cell  = new PdfPCell(new Paragraph("id",f8));
+                //居中对齐
+                cell.setHorizontalAlignment(1);
+                //将单元格加入表格
+                table.addCell(cell);
+                //创建第二个单元格对象
+                cell = new PdfPCell(new Paragraph("user_name",f8));
+                cell.setHorizontalAlignment(1);
+                //添加第二个单元格到表格中
+                table.addCell(cell);
+                cell = new PdfPCell(new Paragraph("note",f8));
+                cell.setHorizontalAlignment(1);
+                table.addCell(cell);
+                //获取数据模型中的用户列表
+                List<User> userList =   (List<User>) model.get("userList");
+                for ( User u: userList) {
+                    document.add(new Chunk("\n"));
+                    cell = new PdfPCell(new Paragraph(u.getId() + ""));
+                    table.addCell(cell);
+                    cell = new PdfPCell(new Paragraph(u.getUserName() + ""));
+                    table.addCell(cell);
+                    String note = u.getNote() == null ? "" : u.getNote();
+                    cell = new PdfPCell(new Paragraph(note));
+                    table.addCell(cell);
+                }
+                document.add(table);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+        };
+    }
+
+
+
+    @GetMapping("/toFile")
+    public String openFileUpload(){
+        return "file/upload";
+    }
+
+    /**
+     * 使用HttpServletRequest作为
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/requestFile")
+    @ResponseBody
+    public Map<String,Object> uploadRequest(HttpServletRequest request){
+        boolean flag = false;
+        MultipartHttpServletRequest mrge = null;
+        //如果请求的类型为文件上传的请求类型，就将请求类型转换为文件上传请求类型
+        if(request instanceof  MultipartHttpServletRequest){
+            mrge = (MultipartHttpServletRequest) request;
+        }else{
+            return dealResultMap(false,"上传失败");
+        }
+        // 获取MultipartFile文件信息
+        MultipartFile mf = mrge.getFile("file");
+        //获取上传资源文件名
+        String fileName = mf.getOriginalFilename();
+        File file = new File(fileName);
+        try {
+            //保存文件
+            mf.transferTo(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return dealResultMap(false,"上传失败");
+        }
+        return dealResultMap(true,"上传成功");
+    }
+
+    @PostMapping("/multipart")
+    @ResponseBody
+    public Map<String,Object> uploadMultipartFile(MultipartFile file){
+        String filename = file.getOriginalFilename();
+        File newFile = new File(filename);
+        try {
+            file.transferTo(newFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return dealResultMap(false,"上传失败");
+        }
+        return dealResultMap(true,"上传成功");
+    }
+
+    @PostMapping("/part")
+    public Map<String,Object> uploadPath(Part file){
+        String fileName = file.getSubmittedFileName();
+        try {
+            file.write(fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return dealResultMap(false,"上传失败");
+        }
+        return dealResultMap(true,"上传成功");
+    }
+
+
+
+    public Map<String,Object> dealResultMap(boolean success,String msg){
+        Map<String,Object> map = new HashMap<>(16);
+        map.put("success",success);
+        map.put("msg",msg);
+        return map;
+    }
+
 
 }
