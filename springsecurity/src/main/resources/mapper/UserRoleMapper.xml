@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.other.springsecurity.reposity.UserRoleMapper">
+
+    <!--UserRole一对多的关系-->
+  <!--  <resultMap id="UserRole" type="com.example.springboot.other.springsecurity.pojo.User">
+        <id column="id" property="id"></id>
+        <result column="user_name" property="userName"></result>
+        <result column="pwd" property="pwd" ></result>
+        <result column="available" property="available"></result>
+        <result column="note" property="note"></result>
+        <collection property="roleList" ofType="com.example.springboot.other.springsecurity.pojo.Role">
+            <id  column="id" property="id" />
+            <result column="role_name" property="roleName"/>
+            <result column="note" property="note"/>
+        </collection>
+    </resultMap>-->
+    <!--根据用户名查出他的所有Role信息-->
+    <select id="findRoleByUserName" parameterType="java.lang.String" resultType="com.example.springboot.other.springsecurity.pojo.Role">
+          select role_name,note from t_role where id in(
+
+            select role_id from t_user_role where user_id = (
+                select id from t_user where user_name = #{userName}
+                )
+
+            )
+    </select>
+</mapper>
