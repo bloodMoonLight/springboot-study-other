@@ -44,9 +44,14 @@ public class PDF2SWF {
     }
 
     public static void main(String []args) throws Exception {
-        String sourcePath = "D:\\test.pdf";
+        /*String sourcePath = "D:\\test.pdf";
         String destPath = "D:\\";
         String fileName = "test.swf";
-        PDF2SWF.convertPDF2SWF(sourcePath, destPath, fileName);
+        PDF2SWF.convertPDF2SWF(sourcePath, destPath, fileName);*/
+
+
+        String filePath = "新建文本文档.txt";
+        String substring = filePath.substring(filePath.lastIndexOf("."));
+        System.out.println(substring);
     }
 }

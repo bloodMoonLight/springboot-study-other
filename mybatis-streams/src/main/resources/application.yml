@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://47.92.4.169:12760/law_teaching?serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: dream080
+    type: com.alibaba.druid.pool.DruidDataSource
+    max-idle: 10
+    max-active: 50
+    max-wait: 1000
+    initial-size: 5
+
+
+server:
+  port: 8081
